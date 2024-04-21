@@ -572,7 +572,7 @@ TEST(LibWriteTests, createDirectoryTest3){
         ASSERT_TRUE(testWad->isDirectory(testPath));
         ASSERT_FALSE(testWad->isContent(testPath));
 
-        ASSERT_TRUE(testWad->isDirectory(testPath2));
+        ASSERT_TRUE(testWad->isDirectory(testPath2)); //FAILS
         ASSERT_FALSE(testWad->isContent(testPath2));
 
         testVector.clear();

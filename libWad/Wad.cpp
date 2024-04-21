@@ -135,6 +135,10 @@ bool Wad::isContentMatch(const std::string &path) {
 }
 
 bool Wad::isContent(const std::string &path) {
+    //std::cout << path << std::endl;
+    for (auto it = absPaths.begin(); it != absPaths.end(); it++) {
+        //std::cout << it->first << std::endl;
+    }
     if (!absPaths.count(path))
         return false;
     if (!absPaths[path]) {
@@ -251,7 +255,7 @@ void Wad::createDirectory(const std::string &path) {
         endParent.pop_back();
     }
     endParent += "_END";
-    //std::cout << endParent << std::endl;
+    std::cout << endParent << std::endl;
     int index = 0;
     bool touch = false;
     for (int i = 0; i < descriptors.size(); i++) {
@@ -292,8 +296,88 @@ void Wad::createDirectory(const std::string &path) {
 }
 
 void Wad::createFile(const std::string &path) {
-    return;
+    //get parent folder
+    std::string parentFolderName = "";
+    std::string mutePath = path;
+    size_t lastPos = mutePath.find_last_of('/');
+    if (lastPos != std::string::npos) {
+        size_t secondLastPos = mutePath.rfind('/', lastPos - 1);
+        if (secondLastPos != std::string::npos) {
+            parentFolderName = mutePath.substr(secondLastPos + 1, lastPos - secondLastPos - 1);
+        }
+    }
+    //fix / bug
+    if (parentFolderName.size() + 1 == path.size()) {
+        parentFolderName = "";
+    }
+    std::regex pattern(".{0,2}");
+    if (!std::regex_match(parentFolderName, pattern)) {
+        return;
+    }
+
+    //check if absolute path exists
+    std::string newAbsPath = "";
+    lastPos = mutePath.find_last_of('/');
+    if (lastPos != std::string::npos) {
+        // Extract the substring from the beginning of the string to the last separator position
+        newAbsPath = mutePath.substr(0, lastPos);
+        newAbsPath += '/';
+    }
+    if (!isDirectory(newAbsPath)) {
+        return;
+    }
+
+    std::string newRelPath = mutePath.substr(mutePath.find_last_of('/') + 1);
+    if (newRelPath.size() > 8) {
+        return;
+    }
+    if (isDirectoryMatch(newRelPath)) {
+        return;
+    }
+    Element* newElement = new Element(newRelPath, 0, 0, false);
+    //std::cout << newAbsPath << std::endl;
+    Element* parent = absPaths[newAbsPath];
+    parent->files.push_back(newElement);
+    absPaths.insert(std::make_pair(mutePath, newElement));
+
+    //edit descriptors and wad file
+    numDescriptors++;
+    int index = 0;
+    if (parentFolderName == "/") {
+        index = 0;
+    }
+    else {
+        bool touch = false;
+        std::string match = parentFolderName += "_END";
+        std::cout << parentFolderName << std::endl;
+        for (int i = 0; i < descriptors.size(); i++) {
+            if (strcmp(descriptors[i].c_str(), match.c_str()) == 0) {
+                touch = true;
+                index = i;
+                break;
+            }
+        }
+        if (!touch) {
+            index = descriptors.size();
+        }
+    }
+    fileStream.seekp(std::streamoff((index)*16 + descriptorOffset), std::ios_base::beg);
+    std::vector<char> buffer((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+    //write new element
+    fileStream.write((char*)&newElement->offset, 4);
+    fileStream.write((char*)&newElement->length, 4);
+    fileStream.write(newElement->filename.c_str(), 8);
+    //rewrite offset
+    if (!buffer.empty()) {
+        //existing directory
+        fileStream.write(buffer.data(), buffer.size());
+    }
+    //print(head, "");
+    //write updated num
+    fileStream.seekp(fileStream.beg + std::streamoff(4));
+    fileStream.write((char*)&numDescriptors, 4);
 }
+
 
 int Wad::writeToFile(const std::string &path, const char *buffer, int length, int offset) {
     return 0;

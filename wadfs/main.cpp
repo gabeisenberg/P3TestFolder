@@ -1,3 +1,4 @@
+/*
 #include "../libWad/Wad.h"
 #define FUSE_USE_VERSION 26
 #include <fuse.h>
@@ -106,4 +107,4 @@ int main(int argc, char* argv[]) {
     int ret = fuse_main(argc, argv, &operations, static_cast<void*>(w));
     delete w;
     return ret;
-}
+}*/

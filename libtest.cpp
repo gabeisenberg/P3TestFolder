@@ -13,7 +13,8 @@
 #include <cctype>
 #include <stack>
 #include <regex>
-#include "gtest/gtest.h"
+//#include "gtest/gtest.h"
+#include "test-workspace/googletest/googletest/include/gtest/gtest.h"
 
 #include "libWad/Wad.h"
 
@@ -36,7 +37,6 @@ TEST(LibReadTests, getMagic){
         std::string wad_path = setupWorkspace();
         Wad* testWad = Wad::loadWad(wad_path);
         ASSERT_EQ(testWad->getMagic(), "IWAD");
-
         delete testWad;
 }
 

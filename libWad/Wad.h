@@ -26,7 +26,7 @@ struct Element {
 };
 
 class Wad {
-    char* fileMagic;
+    std::string fileMagic;
     uint32_t numDescriptors;
     uint32_t descriptorOffset;
     std::fstream fileStream;
@@ -44,7 +44,7 @@ public:
     void createFile(const std::string &path);
     int writeToFile(const std::string &path, const char* buffer, int length, int offset = 0);
     //getters
-    char* getMagic();
+    std::string getMagic();
     uint32_t getNumDescriptors();
     uint32_t getDescriptorOffset();
     Element* getHead();

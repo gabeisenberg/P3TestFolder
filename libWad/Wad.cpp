@@ -12,11 +12,13 @@ Wad::Wad(const std::string &path) {
         throw new std::runtime_error("");
     }
     //read header (from ernesto video)
-    fileMagic = new char[5];
-    fileMagic[4] = '\0';
-    fileStream.read(fileMagic, 4);
+    char* temp = new char[5];
+    temp[4] = '\0';
+    fileStream.read(temp, 4);
     fileStream.read((char*)&numDescriptors, 4);
     fileStream.read((char*)&descriptorOffset, 4);
+    fileMagic = temp;
+    delete[] temp;
     //construct tree
     fileStream.seekg(descriptorOffset, std::ios::beg); //move to descriptor list
     head = new Element("/", descriptorOffset, 0, true);
@@ -30,7 +32,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
     if (Wad::isDirectory(e->filename) && s[s.size() - 1] != '/') {
         s += '/';
     }
-    std::cout << s << std::endl;
+    //std::cout << s << std::endl;
     absPaths.insert(std::make_pair(s, e));
     for (Element* f: e->files) {
         setAbsPaths(f, s);
@@ -164,7 +166,7 @@ int Wad::getDirectory(const std::string &path, std::vector<std::string>* directo
     return e->files.size();
 }
 
-char* Wad::getMagic() {
+std::string Wad::getMagic() {
     return fileMagic;
 }
 

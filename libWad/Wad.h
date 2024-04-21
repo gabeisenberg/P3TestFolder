@@ -28,6 +28,7 @@ struct Element {
 class Wad {
     std::string fileMagic;
     uint32_t numDescriptors;
+    int elementsRead;
     uint32_t descriptorOffset;
     std::fstream fileStream;
     Element* head;

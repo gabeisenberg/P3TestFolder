@@ -24,6 +24,7 @@ Wad::Wad(const std::string &path) {
     fileStream.seekg(descriptorOffset, std::ios::beg); //move to descriptor list
     head = new Element("/", descriptorOffset, 0, true);
     std::cout << "check 2.1" << std::endl;
+    elementsRead = 0;
     traverse(head);
     std::cout << "check 2.2" << std::endl;
     //create abs paths
@@ -45,7 +46,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
 
 void Wad::traverse(Element *e) {
     std::cout << "stuck?" << std::endl;
-    if (fileStream.eof()) {
+    if (fileStream.eof() || elementsRead == numDescriptors) {
         return;
     }
     if (Wad::isDirectory(e->filename)) {
@@ -101,6 +102,7 @@ Element* Wad::readContent() {
     else {
         newElement = new Element(newFilepath, newOffset, newLength, false);
     }
+    elementsRead++;
     return newElement;
 }
 

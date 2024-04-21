@@ -42,7 +42,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
 
 void Wad::traverse(Element *e) {
     std::cout << e->filename << std::endl;
-    if (fileStream.eof()) {
+    if (fileStream.eof() || !e) {
         return;
     }
     if (Wad::isDirectory(e->filename)) {
@@ -84,6 +84,9 @@ void Wad::traverse(Element *e) {
 }
 
 Element* Wad::readContent() {
+    if (fileStream.eof()) {
+        return nullptr;
+    }
     uint32_t newOffset;
     uint32_t newLength;
     char* newPath = new char[9];

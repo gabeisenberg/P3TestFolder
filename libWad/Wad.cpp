@@ -35,15 +35,11 @@ void Wad::setAbsPaths(Element* e, std::string s) {
         e->filename += '/';
         s += '/';
     }
-    //std::cout << s << std::endl;
+    std::cout << s << std::endl;
     absPaths.insert(std::make_pair(s, e));
     for (Element* f: e->files) {
         setAbsPaths(f, s);
     }
-}
-
-void Wad::setIndicies(Element* e, int& i) {
-    
 }
 
 void Wad::traverse(Element *e) {
@@ -118,7 +114,8 @@ Element* Wad::readContent() {
     else {
         newElement = new Element(newFilepath, newOffset, newLength, false);
     }
-    descriptorIndex.insert(std::make_pair(newElement, elementsRead));
+    //descriptorIndex.insert(std::make_pair(newElement, elementsRead));
+    descriptors.push_back(newFilepath);
     elementsRead++;
     return newElement;
 }
@@ -138,6 +135,9 @@ bool Wad::isContentMatch(const std::string &path) {
 bool Wad::isContent(const std::string &path) {
     if (!absPaths.count(path))
         return false;
+    if (!absPaths[path]) {
+        return false;
+    }
     if (absPaths[path]->isDirectory) {
         return false;
     }
@@ -152,9 +152,12 @@ bool Wad::isDirectory(const std::string &path) {
     if (s[s.size() - 1] != '/') {
         s += '/';
     }
-    //std::cout << s << std::endl;
+    std::cout << s << std::endl;
     if (!absPaths.count(s))
         return false;
+    if (!absPaths[s]) {
+        return false;
+    }
     if (absPaths[s]->isDirectory) {
         return true;
     }
@@ -220,6 +223,7 @@ void Wad::createDirectory(const std::string &path) {
     if (!parent) {
         return;
     }
+
     //make new element
     std::string newPath = path.substr(s.size());
     if (newPath[newPath.size() - 1] == '/') {
@@ -228,29 +232,44 @@ void Wad::createDirectory(const std::string &path) {
     std::string newStart = newPath + "_START";
     std::string newEnd = newPath + "_END";
     //std::cout << newPath << std::endl;
+    if (newPath.size() > 2) {
+        return;
+    }
     Element* newDir = new Element(newPath, 0, 0, true);
     parent->files.push_back(newDir);
     absPaths.clear();
     setAbsPaths(head, "");
+    //print(head, "");
 
     numDescriptors += 2; //add start and end
 
-    //find index of parent end directory
+    //find index, end descriptor of parent directory
+    std::string endParent = parent->filename;
+    if (endParent[endParent.size()-1]=='/') {
+        endParent.pop_back();
+    }
+    endParent += "_END";
+    //std::cout << endParent << std::endl;
     int index = 0;
-    if (parent->files.size() == 1) {
-        index = descriptorIndex[parent];
+    bool touch = false;
+    for (int i = 0; i < descriptors.size(); i++) {
+        if (strcmp(endParent.c_str(), descriptors[i].c_str()) == 0) {
+            index = i;
+            touch = true;
+            break;
+        }
     }
-    else {
-        index = descriptorIndex[parent->files[parent->files.size() - 2]];
+    if (!touch) {
+        index = descriptors.size() - index;
     }
-    //move to index + 1 position
-    //std::cout << descriptorIndex.size() << std::endl;
-    fileStream.seekp(std::streamoff((index+1)*16 + descriptorOffset), std::ios_base::beg);
+
+    //move to indexed descriptor list
+    fileStream.seekp(std::streamoff((index)*16 + descriptorOffset), std::ios_base::beg);
     std::vector<char> buffer((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
     //write new namespace descriptors
     uint32_t newOffset = 0;
     uint32_t newLength = 0;
-    fileStream.seekp(std::streamoff((index+1)*16 + descriptorOffset), std::ios_base::beg);
+    fileStream.seekp(std::streamoff((index)*16 + descriptorOffset), std::ios_base::beg);
     fileStream.write((char*)&newOffset, 4);
     fileStream.write((char*)&newLength, 4);
     fileStream.write(newStart.c_str(), 8);

@@ -395,6 +395,9 @@ int Wad::getDirectory(const std::string &path, std::vector<std::string>* directo
     if (!absPaths.count(s)) {
         return -1;
     }
+    if (!absPaths[s]) {
+        return -1;
+    }
     if (!absPaths[s]->isDirectory) {
         return -1;
     }

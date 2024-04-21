@@ -104,6 +104,7 @@ Element* Wad::readContent() {
     fileStream.read((char*)&newLength, 4);
     fileStream.read(newPath, 8);
     std::string newFilepath = newPath;
+    std::cout << newFilepath << std::endl;
     delete[] newPath;
     Element *newElement;
     if (Wad::isDirectory(newFilepath)) {

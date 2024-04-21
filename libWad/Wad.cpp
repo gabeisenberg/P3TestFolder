@@ -44,6 +44,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
 }
 
 void Wad::traverse(Element *e) {
+    std::cout << "stuck?" << std::endl;
     if (fileStream.eof()) {
         return;
     }

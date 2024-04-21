@@ -35,7 +35,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 14,
+				"line" : 15,
 				"parent" : 0
 			},
 			{
@@ -69,7 +69,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 15,
+				"line" : 16,
 				"parent" : 0
 			}
 		]
@@ -111,7 +111,8 @@
 			[
 				0,
 				2,
-				3
+				3,
+				4
 			]
 		}
 	],
@@ -156,7 +157,8 @@
 			[
 				0,
 				2,
-				3
+				3,
+				4
 			]
 		},
 		{
@@ -190,6 +192,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "libtest.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "wadfs/main.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

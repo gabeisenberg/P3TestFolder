@@ -25,7 +25,9 @@ Wad::Wad(const std::string &path) {
     elementsRead = 0;
     traverse(head);
     //create abs paths
+    absPaths.clear();
     setAbsPaths(head, "");
+    //print(head, "");
 }
 
 void Wad::setAbsPaths(Element* e, std::string s) {
@@ -35,7 +37,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
         e->filename += '/';
         s += '/';
     }
-    std::cout << s << std::endl;
+    //std::cout << s << std::endl;
     absPaths.insert(std::make_pair(s, e));
     for (Element* f: e->files) {
         setAbsPaths(f, s);
@@ -152,9 +154,9 @@ bool Wad::isDirectory(const std::string &path) {
     if (s[s.size() - 1] != '/') {
         s += '/';
     }
-    std::cout << s << std::endl;
-    if (!absPaths.count(s))
-        return false;
+    //std::cout << s << std::endl;
+    if (absPaths.count(s) > 0)
+        return true;
     if (!absPaths[s]) {
         return false;
     }
@@ -253,6 +255,7 @@ void Wad::createDirectory(const std::string &path) {
     int index = 0;
     bool touch = false;
     for (int i = 0; i < descriptors.size(); i++) {
+        std::cout << descriptors[i] << std::endl;
         if (strcmp(endParent.c_str(), descriptors[i].c_str()) == 0) {
             index = i;
             touch = true;
@@ -260,7 +263,7 @@ void Wad::createDirectory(const std::string &path) {
         }
     }
     if (!touch) {
-        index = descriptors.size() - index;
+        index = descriptors.size();
     }
 
     //move to indexed descriptor list
@@ -284,29 +287,9 @@ void Wad::createDirectory(const std::string &path) {
     //write updated num
     fileStream.seekp(fileStream.beg + std::streamoff(4));
     fileStream.write((char*)&numDescriptors, 4);
+    absPaths.clear();
+    setAbsPaths(head, "");
 }
-
-/*int i = 1;
-        std::cout << index << " - " << buffer.size() << std::endl;
-        for (char c : buffer) {
-            tempChar.push_back(c);
-            if (i % 3 == 0) {
-                if (tempChar.size() == 8) {
-                    i++;
-                    for (char c2 : tempChar) {
-                        std::cout << c2;
-                    }
-                    std::cout << std::endl;
-                    tempChar.clear();
-                }
-            }
-            else if (tempChar.size() == 4) {
-                i++;
-                int t = *reinterpret_cast<int*>(tempChar.data());
-                std::cout << t << std::endl;
-                tempChar.clear();
-            }
-        }*/
 
 void Wad::createFile(const std::string &path) {
     return;

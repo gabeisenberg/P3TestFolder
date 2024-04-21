@@ -9,7 +9,8 @@ add_executable(P3TestFolder
         libWad/Wad.cpp
         libWad/Wad.h
         libWad/wad_dump.cpp
-        libtest.cpp)
+        libtest.cpp
+        wadfs/main.cpp)
 
 find_package(GTest REQUIRED)
 target_link_libraries(P3TestFolder GTest::GTest GTest::Main)

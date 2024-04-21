@@ -174,7 +174,7 @@ int Wad::getSize(const std::string &path) {
 }
 
 int Wad::getContents(const std::string &path, char *buffer, int length, int offset) {
-    if (isContent(path)) {
+    if (isDirectory(path) || !absPaths[path]) {
         return -1;
     }
     Element* e = absPaths[path];
@@ -201,9 +201,27 @@ int Wad::writeToFile(const std::string &path, const char *buffer, int length, in
 }
 
 int Wad::getDirectory(const std::string &path, std::vector<std::string>* directory) {
-    Element* e = absPaths[path];
+    if (strcmp(path.c_str(), "") == 0) {
+        return -1;
+    }
+    std::string s = path;
+    if (s[s.size() - 1] != '/') {
+        s += '/';
+    }
+    //std::cout << s << std::endl;
+    if (!absPaths.count(s)) {
+        return -1;
+    }
+    if (!absPaths[s]->isDirectory) {
+        return -1;
+    }
+    Element* e = absPaths[s];
     for (Element* f : e->files) {
-        directory->push_back(f->filename);
+        std::string temp = f->filename;
+        if (f->isDirectory && temp[temp.size() - 1] == '/') {
+            temp.pop_back();
+        }
+        directory->push_back(temp);
     }
     return e->files.size();
 }

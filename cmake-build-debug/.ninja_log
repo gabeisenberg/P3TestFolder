@@ -1,0 +1,11 @@
+# ninja log v5
+2	2410	1713660144968222598	CMakeFiles/P3TestFolder.dir/test-workspace/googletest/googletest/test/googletest-listener-test.cc.o	86c079f89ee0f4c1
+2	2426	1713660144986197618	CMakeFiles/P3TestFolder.dir/test-workspace/googletest/googletest/test/googletest-message-test.cc.o	9a4cd97578e75556
+1	2716	1713660145276478274	CMakeFiles/P3TestFolder.dir/test-workspace/googletest/googletest/test/googletest-param-test-invalid-name1-test_.cc.o	58f949ce4e6a1932
+4	2729	1713660145290124021	CMakeFiles/P3TestFolder.dir/test-workspace/googletest/googletest/test/googletest-param-test-invalid-name2-test_.cc.o	dd1a01a763f7f7fd
+0	1650	1713660304114398053	CMakeFiles/P3TestFolder.dir/libWad/wad_dump.cpp.o	9c4bd41e63bbfd6e
+2	2695	1713660305160151757	CMakeFiles/P3TestFolder.dir/libtest.cpp.o	91cee20db7df79dd
+0	2909	1713660305374862659	CMakeFiles/P3TestFolder.dir/libWad/Wad.cpp.o	e1939d0dac9892
+2910	3066	1713660305541994439	P3TestFolder	47247baa410683df
+4	2286	1713661274523705574	CMakeFiles/P3TestFolder.dir/libtest.cpp.o	91cee20db7df79dd
+2286	2435	1713661274681677038	P3TestFolder	47247baa410683df

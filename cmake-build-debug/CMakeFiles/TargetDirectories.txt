@@ -1,0 +1,3 @@
+/Users/gabrielisenberg/Desktop/UF/os/P3TestFolder/cmake-build-debug/CMakeFiles/P3TestFolder.dir
+/Users/gabrielisenberg/Desktop/UF/os/P3TestFolder/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/gabrielisenberg/Desktop/UF/os/P3TestFolder/cmake-build-debug/CMakeFiles/rebuild_cache.dir

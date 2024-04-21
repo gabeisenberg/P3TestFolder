@@ -5,6 +5,7 @@
 #include "Wad.h"
 
 Wad::Wad(const std::string &path) {
+    std::cout << "check 2.0" << std::endl;
     //initialize fstream object
     fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
     if (!fileStream.is_open()) {
@@ -22,9 +23,12 @@ Wad::Wad(const std::string &path) {
     //construct tree
     fileStream.seekg(descriptorOffset, std::ios::beg); //move to descriptor list
     head = new Element("/", descriptorOffset, 0, true);
+    std::cout << "check 2.1" << std::endl;
     traverse(head);
+    std::cout << "check 2.2" << std::endl;
     //create abs paths
     setAbsPaths(head, "");
+    std::cout << "check 2.3" << std::endl;
 }
 
 void Wad::setAbsPaths(Element* e, std::string s) {

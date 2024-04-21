@@ -10,6 +10,7 @@
 #include <sstream>
 #include <map>
 #include <string>
+#include <fstream>
 
 struct Element {
     std::string filename;
@@ -34,6 +35,7 @@ class Wad {
     Element* head;
     Wad(const std::string &path);
     std::map<std::string, Element*> absPaths;
+    std::map<Element*, int> descriptorIndex;
 public:
     static Wad* loadWad(const std::string &path);
     bool isContent(const std::string &path);
@@ -59,6 +61,8 @@ public:
     static bool isMapDirectory(const std::string &path);
     static bool isNamespaceDirectory(const std::string &path);
     void setAbsPaths(Element* e, std::string s);
+    void setIndicies(Element* e, int& i);
+    void print(Element* e, std::string s);
 };
 
 

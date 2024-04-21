@@ -466,7 +466,7 @@ TEST(LibWriteTests, createDirectoryTest2){
         std::string testPath = "/Gl/ex";
 
         testWad->createDirectory(testPath);
-        
+        //testWad->print(testWad->getHead(), ""); //i added this
         ASSERT_TRUE(testWad->isDirectory(testPath));
         ASSERT_FALSE(testWad->isContent(testPath));
 
@@ -490,7 +490,7 @@ TEST(LibWriteTests, createDirectoryTest2){
         //Deleting and reinitiating object
         delete testWad;
         testWad = Wad::loadWad(wad_path);
-
+        testWad->print(testWad->getHead(), ""); //i added this
         ASSERT_TRUE(testWad->isDirectory(testPath));
         ASSERT_FALSE(testWad->isContent(testPath));
 

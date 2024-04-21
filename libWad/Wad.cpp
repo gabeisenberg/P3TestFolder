@@ -6,7 +6,7 @@
 
 Wad::Wad(const std::string &path) {
     //initialize fstream object
-    fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
+    fileStream.open(path, std::ios::in | std::ios::out |std::ios::binary);
     if (!fileStream.is_open()) {
         std::cout << "did not open was path!" << std::endl;
         throw new std::runtime_error("");
@@ -20,7 +20,7 @@ Wad::Wad(const std::string &path) {
     fileMagic = temp;
     delete[] temp;
     //construct tree
-    fileStream.seekg(descriptorOffset, std::ios::beg); //move to descriptor list
+    fileStream.seekp(descriptorOffset, std::ios::beg); //move to descriptor list
     head = new Element("/", descriptorOffset, 0, true);
     elementsRead = 0;
     traverse(head);
@@ -31,7 +31,8 @@ Wad::Wad(const std::string &path) {
 void Wad::setAbsPaths(Element* e, std::string s) {
     //std::cout << e->filename << std::endl;
     s += e->filename;
-    if (Wad::isDirectoryMatch(e->filename) && s[s.size() - 1] != '/') {
+    if (e->isDirectory && s[s.size() - 1] != '/') {
+        e->filename += '/';
         s += '/';
     }
     //std::cout << s << std::endl;
@@ -39,6 +40,10 @@ void Wad::setAbsPaths(Element* e, std::string s) {
     for (Element* f: e->files) {
         setAbsPaths(f, s);
     }
+}
+
+void Wad::setIndicies(Element* e, int& i) {
+
 }
 
 void Wad::traverse(Element *e) {
@@ -113,6 +118,7 @@ Element* Wad::readContent() {
     else {
         newElement = new Element(newFilepath, newOffset, newLength, false);
     }
+    descriptorIndex.insert(std::make_pair(newElement, elementsRead));
     elementsRead++;
     return newElement;
 }
@@ -181,7 +187,7 @@ int Wad::getContents(const std::string &path, char *buffer, int length, int offs
     if(offset >= e->length){
         return 0;
     }
-    fileStream.seekg(e->offset + offset, fileStream.beg);
+    fileStream.seekp(e->offset + offset, fileStream.beg);
     int totalLength = e->length - offset;
     int toRead = std::min(length, totalLength);
     fileStream.read(buffer, toRead);
@@ -189,7 +195,96 @@ int Wad::getContents(const std::string &path, char *buffer, int length, int offs
 }
 
 void Wad::createDirectory(const std::string &path) {
-    return;
+    if (path.empty()) {
+        return;
+    }
+    if (isMapDirectory(path)) {
+        return;
+    }
+    //find parent
+    std::string s = path;
+    if (s[s.size() - 1] == '/') {
+        s.pop_back();
+    }
+    for (int i = s.size() - 1; i >= 0; i--) {
+        if (s[i] == '/') {
+            break;
+        }
+        s.pop_back();
+    }
+    if (s.empty()) {
+        return;
+    }
+    Element* parent = absPaths[s];
+    //std::cout << s << std::endl;
+    if (!parent) {
+        return;
+    }
+    //make new element
+    std::string newPath = path.substr(s.size());
+    if (newPath[newPath.size() - 1] == '/') {
+        newPath.pop_back();
+    }
+    std::string newStart = newPath + "_START";
+    std::string newEnd = newPath + "_END";
+    //std::cout << newPath << std::endl;
+    Element* newDir = new Element(newPath, 0, 0, true);
+    parent->files.push_back(newDir);
+    absPaths.clear();
+    setAbsPaths(head, "");
+
+    numDescriptors += 2; //add start and end
+
+    //find index of parent end directory
+    int index = 0;
+    if (parent->files.size() == 1) {
+        index = descriptorIndex[parent];
+    }
+    else {
+        index = descriptorIndex[parent->files[parent->files.size() - 2]];
+    }
+    //move to index + 1 position
+    std::cout << descriptorIndex.size() << std::endl;
+    fileStream.seekp(std::streamoff((index+1)*16 + descriptorOffset), std::ios_base::beg);
+    std::vector<char> buffer((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+    //write new namespace descriptors
+    uint32_t newOffset = 0;
+    uint32_t newLength = 0;
+    fileStream.seekp(std::streamoff((index+1)*16 + descriptorOffset), std::ios_base::beg);
+    fileStream.write((char*)&newOffset, 4);
+    fileStream.write((char*)&newLength, 4);
+    fileStream.write(newStart.c_str(), 8);
+    fileStream.write((char*)&newOffset, 4);
+    fileStream.write((char*)&newLength, 4);
+    fileStream.write(newEnd.c_str(), 8);
+    if (!buffer.empty()) {
+        fileStream.write(buffer.data(), buffer.size());
+        /*int i = 1;
+        std::cout << index << " - " << buffer.size() << std::endl;
+        for (char c : buffer) {
+            tempChar.push_back(c);
+            if (i % 3 == 0) {
+                if (tempChar.size() == 8) {
+                    i++;
+                    for (char c2 : tempChar) {
+                        std::cout << c2;
+                    }
+                    std::cout << std::endl;
+                    tempChar.clear();
+                }
+            }
+            else if (tempChar.size() == 4) {
+                i++;
+                int t = *reinterpret_cast<int*>(tempChar.data());
+                std::cout << t << std::endl;
+                tempChar.clear();
+            }
+        }*/
+    }
+    //print(head, "");
+    //write updated num
+    fileStream.seekp(fileStream.beg + std::streamoff(4));
+    fileStream.write((char*)&numDescriptors, 4);
 }
 
 void Wad::createFile(const std::string &path) {
@@ -265,4 +360,12 @@ bool Wad::isNamespaceDirectory(const std::string &path) {
 
 Element* Wad::getHead() {
     return head;
+}
+
+void Wad::print(Element *e, std::string s) {
+    s += e->filename;
+    std::cout << s << std::endl;
+    for (Element* f : e->files) {
+        print(f, s);
+    }
 }

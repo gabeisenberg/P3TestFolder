@@ -31,7 +31,7 @@ Wad::Wad(const std::string &path) {
 void Wad::setAbsPaths(Element* e, std::string s) {
     //std::cout << e->filename << std::endl;
     s += e->filename;
-    if (Wad::isDirectory(e->filename) && s[s.size() - 1] != '/') {
+    if (Wad::isDirectoryMatch(e->filename) && s[s.size() - 1] != '/') {
         s += '/';
     }
     //std::cout << s << std::endl;
@@ -45,7 +45,7 @@ void Wad::traverse(Element *e) {
     if (fileStream.eof() || !e) {
         return;
     }
-    if (Wad::isDirectory(e->filename)) {
+    if (Wad::isDirectoryMatch(e->filename)) {
         if (Wad::isMapDirectory(e->filename)) {
             for (int i = 0; i < 10; i++) {
                 //will always be content files, no need to traverse
@@ -107,7 +107,7 @@ Element* Wad::readContent() {
     //std::cout << newFilepath << std::endl;
     delete[] newPath;
     Element *newElement;
-    if (Wad::isDirectory(newFilepath)) {
+    if (Wad::isDirectoryMatch(newFilepath)) {
         newElement = new Element(newFilepath, newOffset, newLength, true);
     }
     else {
@@ -122,18 +122,42 @@ Wad *Wad::loadWad(const std::string &path) {
     return ptr;
 }
 
-bool Wad::isContent(const std::string &path) {
+bool Wad::isContentMatch(const std::string &path) {
     if (isMapDirectory(path) || isNamespaceDirectory(path)) {
         return false;
     }
     return true;
 }
 
+bool Wad::isContent(const std::string &path) {
+    if (!absPaths.count(path))
+        return false;
+    if (absPaths[path]->isDirectory) {
+        return false;
+    }
+    return true;
+}
+
 bool Wad::isDirectory(const std::string &path) {
-    if (isMapDirectory(path) || isNamespaceDirectory(path)) {
+    if (strcmp(path.c_str(), "") == 0) {
+        return false;
+    }
+    std::string s = path;
+    if (s[s.size() - 1] != '/') {
+        s += '/';
+    }
+    std::cout << s << std::endl;
+    if (!absPaths.count(s))
+        return false;
+    if (absPaths[s]->isDirectory) {
         return true;
     }
+    //std::cout << absPaths[s]->filename << std::endl;
     return false;
+}
+
+bool Wad::isDirectoryMatch(const std::string &path) {
+    return !isContentMatch(path);
 }
 
 int Wad::getSize(const std::string &path) {

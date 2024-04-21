@@ -37,7 +37,9 @@ class Wad {
 public:
     static Wad* loadWad(const std::string &path);
     bool isContent(const std::string &path);
+    bool isContentMatch(const std::string &path);
     bool isDirectory(const std::string &path);
+    bool isDirectoryMatch(const std::string &path);
     int getSize(const std::string &path);
     int getContents(const std::string &path, char* buffer, int length, int offset = 0);
     int getDirectory(const std::string &path, std::vector<std::string>* directory);

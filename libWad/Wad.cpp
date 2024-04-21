@@ -50,6 +50,9 @@ void Wad::traverse(Element *e) {
             for (int i = 0; i < 10; i++) {
                 //will always be content files, no need to traverse
                 Element* child = readContent();
+                if (!child) {
+                    return;
+                }
                 e->files.push_back(child);
             }
         }
@@ -63,6 +66,9 @@ void Wad::traverse(Element *e) {
             //get contents
             std::regex end("(.{0,2}_END)?/?");
             Element* child = readContent();
+            if (!child) {
+                return;
+            }
             while (!std::regex_match(child->filename, end)) {
                 traverse(child);
                 //cut _START
@@ -73,6 +79,9 @@ void Wad::traverse(Element *e) {
                 }
                 e->files.push_back(child);
                 child = readContent();
+                if (!child) {
+                    return;
+                }
             }
             if (!std::regex_match(child->filename, end)) {
                 //std::cout << child->filename << std::endl;

@@ -13,8 +13,8 @@
 #include <cctype>
 #include <stack>
 #include <regex>
-//#include "gtest/gtest.h"
-#include "test-workspace/googletest/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
+//#include "test-workspace/googletest/googletest/include/gtest/gtest.h"
 
 #include "libWad/Wad.h"
 

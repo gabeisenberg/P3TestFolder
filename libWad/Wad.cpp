@@ -146,7 +146,7 @@ bool Wad::isDirectory(const std::string &path) {
     if (s[s.size() - 1] != '/') {
         s += '/';
     }
-    std::cout << s << std::endl;
+    //std::cout << s << std::endl;
     if (!absPaths.count(s))
         return false;
     if (absPaths[s]->isDirectory) {

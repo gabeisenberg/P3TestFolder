@@ -34,13 +34,9 @@ const std::string setupWorkspace(){
 
 
 TEST(LibReadTests, getMagic){
-        std::cout << "check 1" << std::endl;
         std::string wad_path = setupWorkspace();
-        std::cout << "check 2" << std::endl;
         Wad* testWad = Wad::loadWad(wad_path);
-        std::cout << "check 3" << std::endl;
         ASSERT_EQ(testWad->getMagic(), "IWAD");
-        std::cout << "check 4" << std::endl;
         delete testWad;
 }
 

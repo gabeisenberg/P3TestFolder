@@ -5,7 +5,6 @@
 #include "Wad.h"
 
 Wad::Wad(const std::string &path) {
-    std::cout << "check 2.0" << std::endl;
     //initialize fstream object
     fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
     if (!fileStream.is_open()) {
@@ -23,13 +22,10 @@ Wad::Wad(const std::string &path) {
     //construct tree
     fileStream.seekg(descriptorOffset, std::ios::beg); //move to descriptor list
     head = new Element("/", descriptorOffset, 0, true);
-    std::cout << "check 2.1" << std::endl;
     elementsRead = 0;
     traverse(head);
-    std::cout << "check 2.2" << std::endl;
     //create abs paths
     setAbsPaths(head, "");
-    std::cout << "check 2.3" << std::endl;
 }
 
 void Wad::setAbsPaths(Element* e, std::string s) {
@@ -46,7 +42,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
 
 void Wad::traverse(Element *e) {
     std::cout << "stuck?" << std::endl;
-    if (fileStream.eof() || elementsRead == numDescriptors) {
+    if (fileStream.eof()) {
         return;
     }
     if (Wad::isDirectory(e->filename)) {
@@ -61,7 +57,8 @@ void Wad::traverse(Element *e) {
             //check for start
             std::regex start("(.{0,2}_START)?/?");
             if (!std::regex_match(e->filename, start)) {
-                //std::cout << "wrong start" << std::endl;
+                std::cout << "wrong start" << std::endl;
+                throw new std::runtime_error("");
             }
             //get contents
             std::regex end("(.{0,2}_END)?/?");
@@ -80,6 +77,7 @@ void Wad::traverse(Element *e) {
             if (!std::regex_match(child->filename, end)) {
                 //std::cout << child->filename << std::endl;
                 std::cout << "wrong end" << std::endl;
+                throw new std::runtime_error("");
             }
         }
     }

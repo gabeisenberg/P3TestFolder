@@ -43,7 +43,7 @@ void Wad::setAbsPaths(Element* e, std::string s) {
 }
 
 void Wad::setIndicies(Element* e, int& i) {
-
+    
 }
 
 void Wad::traverse(Element *e) {
@@ -244,7 +244,7 @@ void Wad::createDirectory(const std::string &path) {
         index = descriptorIndex[parent->files[parent->files.size() - 2]];
     }
     //move to index + 1 position
-    std::cout << descriptorIndex.size() << std::endl;
+    //std::cout << descriptorIndex.size() << std::endl;
     fileStream.seekp(std::streamoff((index+1)*16 + descriptorOffset), std::ios_base::beg);
     std::vector<char> buffer((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
     //write new namespace descriptors
@@ -258,8 +258,16 @@ void Wad::createDirectory(const std::string &path) {
     fileStream.write((char*)&newLength, 4);
     fileStream.write(newEnd.c_str(), 8);
     if (!buffer.empty()) {
+        //existing directory
         fileStream.write(buffer.data(), buffer.size());
-        /*int i = 1;
+    }
+    //print(head, "");
+    //write updated num
+    fileStream.seekp(fileStream.beg + std::streamoff(4));
+    fileStream.write((char*)&numDescriptors, 4);
+}
+
+/*int i = 1;
         std::cout << index << " - " << buffer.size() << std::endl;
         for (char c : buffer) {
             tempChar.push_back(c);
@@ -280,12 +288,6 @@ void Wad::createDirectory(const std::string &path) {
                 tempChar.clear();
             }
         }*/
-    }
-    //print(head, "");
-    //write updated num
-    fileStream.seekp(fileStream.beg + std::streamoff(4));
-    fileStream.write((char*)&numDescriptors, 4);
-}
 
 void Wad::createFile(const std::string &path) {
     return;

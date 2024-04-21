@@ -29,7 +29,7 @@ Wad::Wad(const std::string &path) {
 }
 
 void Wad::setAbsPaths(Element* e, std::string s) {
-    std::cout << e->filename << std::endl;
+    //std::cout << e->filename << std::endl;
     s += e->filename;
     if (Wad::isDirectory(e->filename) && s[s.size() - 1] != '/') {
         s += '/';
@@ -93,7 +93,7 @@ void Wad::traverse(Element *e) {
 }
 
 Element* Wad::readContent() {
-    if (fileStream.eof()) {
+    if (fileStream.eof() || elementsRead == numDescriptors) {
         return nullptr;
     }
     uint32_t newOffset;

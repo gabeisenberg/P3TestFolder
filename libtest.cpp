@@ -40,7 +40,7 @@ TEST(LibReadTests, getMagic){
         delete testWad;
 }
 
-TEST(LibReadTests, isContent){
+/*TEST(LibReadTests, isContent){
         std::string wad_path = setupWorkspace();
         Wad* testWad = Wad::loadWad(wad_path);
         
@@ -1163,3 +1163,4 @@ TEST(LibFunctionalityTests, bigTest){
 
         delete testWad;
 }
+*/

@@ -151,23 +151,27 @@ bool Wad::isContent(const std::string &path) {
 }
 
 bool Wad::isDirectory(const std::string &path) {
-    if (strcmp(path.c_str(), "") == 0) {
+    try {
+        if (strcmp(path.c_str(), "") == 0) {
+            return false;
+        }
+        std::string s = path;
+        if (s[s.size() - 1] != '/') {
+            s += '/';
+        }
+        //std::cout << s << std::endl;
+        if (absPaths.count(s) > 0)
+            return true;
+        if (!absPaths[s]) {
+            return false;
+        }
+        if (absPaths[s]->isDirectory) {
+            return true;
+        }
+        //std::cout << absPaths[s]->filename << std::endl;
         return false;
     }
-    std::string s = path;
-    if (s[s.size() - 1] != '/') {
-        s += '/';
-    }
-    //std::cout << s << std::endl;
-    if (absPaths.count(s) > 0)
-        return true;
-    if (!absPaths[s]) {
-        return false;
-    }
-    if (absPaths[s]->isDirectory) {
-        return true;
-    }
-    //std::cout << absPaths[s]->filename << std::endl;
+    catch (std::exception e) {}
     return false;
 }
 
@@ -255,11 +259,11 @@ void Wad::createDirectory(const std::string &path) {
         endParent.pop_back();
     }
     endParent += "_END";
-    std::cout << endParent << std::endl;
+    //std::cout << endParent << std::endl;
     int index = 0;
     bool touch = false;
     for (int i = 0; i < descriptors.size(); i++) {
-        std::cout << descriptors[i] << std::endl;
+        //std::cout << descriptors[i] << std::endl;
         if (strcmp(endParent.c_str(), descriptors[i].c_str()) == 0) {
             index = i;
             touch = true;
@@ -349,7 +353,7 @@ void Wad::createFile(const std::string &path) {
     else {
         bool touch = false;
         std::string match = parentFolderName += "_END";
-        std::cout << parentFolderName << std::endl;
+        //std::cout << parentFolderName << std::endl;
         for (int i = 0; i < descriptors.size(); i++) {
             if (strcmp(descriptors[i].c_str(), match.c_str()) == 0) {
                 touch = true;
@@ -360,8 +364,11 @@ void Wad::createFile(const std::string &path) {
         if (!touch) {
             index = descriptors.size();
         }
+        else {
+            //index;
+        }
     }
-    fileStream.seekp(std::streamoff((index)*16 + descriptorOffset), std::ios_base::beg);
+    fileStream.seekp(std::streamoff((index*16) + descriptorOffset), std::ios_base::beg);
     std::vector<char> buffer((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
     //write new element
     fileStream.write((char*)&newElement->offset, 4);
@@ -378,10 +385,6 @@ void Wad::createFile(const std::string &path) {
     fileStream.write((char*)&numDescriptors, 4);
 }
 
-
-int Wad::writeToFile(const std::string &path, const char *buffer, int length, int offset) {
-    return 0;
-}
 
 int Wad::getDirectory(const std::string &path, std::vector<std::string>* directory) {
     if (strcmp(path.c_str(), "") == 0) {
@@ -459,4 +462,31 @@ void Wad::print(Element *e, std::string s) {
     for (Element* f : e->files) {
         print(f, s);
     }
+}
+
+int Wad::writeToFile(const std::string &path, const char *buffer, int length, int offset) {
+    if (path.empty() || !buffer || length <= 0 || offset < 0) {
+        return -1;
+    }
+    if (isMapDirectory(path)) {
+        return -1;
+    }
+    Element* file = absPaths[path];
+    if (!file || file->isDirectory) {
+        return -1;
+    }
+    else if (!file->isDirectory) {
+        return 0;
+    }
+    if (offset >= file->length) {
+        return 0;
+    }
+
+    int remainingLength = file->length - offset;
+    int bytesToWrite = std::min(length, remainingLength);
+
+    fileStream.seekp(file->offset + offset, std::ios::beg);
+    fileStream.write(buffer, bytesToWrite);
+
+    return bytesToWrite;
 }

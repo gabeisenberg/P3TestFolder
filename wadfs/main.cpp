@@ -11,22 +11,21 @@
 #include <string.h>
 using namespace std;
 
-static int get_attr(const char* path, struct stat* attr) {
-    // get private data
+static int get_attr(const char* path, struct stat* buffer) {
     Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
-    attr->st_uid = getuid();
-    attr->st_gid = getgid();
-    attr->st_atime = time(NULL);
-    attr->st_mtime = time(NULL);
+    buffer->st_uid = getuid();
+    buffer->st_gid = getgid();
+    buffer->st_atime = time(NULL);
+    buffer->st_mtime = time(NULL);
 
     if(w->isDirectory(path)) {
-        attr->st_mode = S_IFDIR | 0555;
-        attr->st_nlink = 2;
+        buffer->st_mode = S_IFDIR | 0555;
+        buffer->st_nlink = 2;
     }
     else if(w->isContent(path)) {
-        attr->st_mode = S_IFREG | 0444;
-        attr->st_nlink = 1;
-        attr->st_size = w->getSize(path);
+        buffer->st_mode = S_IFREG | 0444;
+        buffer->st_nlink = 1;
+        buffer->st_size = w->getSize(path);
     }
     else {
         return -1;
@@ -34,17 +33,12 @@ static int get_attr(const char* path, struct stat* attr) {
     return 0;
 }
 
-static int mknod(const char* path, mode_t mode, dev_t dev) {
-    return 0;
-}
-
-static int mkdir(const char* path, mode_t mode) {
+static int open(const char* path, struct fuse_file_info* file) {
     return 0;
 }
 
 static int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* file) {
     Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
-    // cast to ints
     int _size = (int)size;
     int _offset = (int)offset;
     if(w->getContents(path, buffer, _size, _offset) != -1) {
@@ -53,11 +47,18 @@ static int read(const char* path, char* buffer, size_t size, off_t offset, struc
     return 0;
 }
 
-static int write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* file) {
+static int release(const char* path, struct fuse_file_info* file) {
+    return 0;
+}
+
+
+
+static int opendir(const char* path, struct fuse_file_info* file) {
     return 0;
 }
 
 static int readdir(const char* path, void* buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* file) {
+    // get private data to access fuse
     Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
     if(!w->isDirectory(path)) {
         return -1;
@@ -81,10 +82,10 @@ static int releasedir(const char* path, struct fuse_file_info* file) {
 
 static struct fuse_operations operations = {
         .getattr = get_attr,
-        .mknod = mknod,
-        .mkdir = mkdir,
+        .open = open,
         .read = read,
-        .write = write,
+        .release = release,
+        .opendir = opendir,
         .readdir = readdir,
         .releasedir = releasedir,
 };
@@ -92,8 +93,8 @@ static struct fuse_operations operations = {
 
 int main(int argc, char* argv[]) {
     if(argc < 3){
-        cout << "not enough arguments." << endl;
-        exit(EXIT_SUCCESS);
+        cout << "error" << endl;
+        return -1;
     }
     string path = argv[argc - 2];
     if(path.at(0) != '/'){

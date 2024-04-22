@@ -6,27 +6,27 @@
 #define FUSE_USE_VERSION 26
 #include <fuse.h>
 #include <unistd.h>
-#include <cstdlib>
+#include <stdlib.h>
 #include <iostream>
-#include <cstring>
+#include <string.h>
 using namespace std;
 
-static int custom_getattr(const char* file_path, struct stat* st_buffer) {
+static int get_attr(const char* path, struct stat* attr) {
     // get private data
-    Wad* wad_instance = static_cast<Wad*>(fuse_get_context()->private_data);
-    st_buffer->st_uid = getuid();
-    st_buffer->st_gid = getgid();
-    st_buffer->st_atime = time(nullptr);
-    st_buffer->st_mtime = time(nullptr);
+    Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
+    attr->st_uid = getuid();
+    attr->st_gid = getgid();
+    attr->st_atime = time(NULL);
+    attr->st_mtime = time(NULL);
 
-    if(wad_instance->isDirectory(file_path)) {
-        st_buffer->st_mode = S_IFDIR | 0555;
-        st_buffer->st_nlink = 2;
+    if(w->isDirectory(path)) {
+        attr->st_mode = S_IFDIR | 0555;
+        attr->st_nlink = 2;
     }
-    else if(wad_instance->isContent(file_path)) {
-        st_buffer->st_mode = S_IFREG | 0444;
-        st_buffer->st_nlink = 1;
-        st_buffer->st_size = wad_instance->getSize(file_path);
+    else if(w->isContent(path)) {
+        attr->st_mode = S_IFREG | 0444;
+        attr->st_nlink = 1;
+        attr->st_size = w->getSize(path);
     }
     else {
         return -1;
@@ -34,65 +34,65 @@ static int custom_getattr(const char* file_path, struct stat* st_buffer) {
     return 0;
 }
 
-static int custom_open(const char* file_path, struct fuse_file_info* file_info) {
+static int mknod(const char* path, mode_t mode, dev_t dev) {
     return 0;
 }
 
-static int custom_read(const char* file_path, char* buffer, size_t size, off_t offset, struct fuse_file_info* file_info) {
-    Wad* wad_instance = static_cast<Wad*>(fuse_get_context()->private_data);
-    // Cast to integers
-    int int_size = static_cast<int>(size);
-    int int_offset = static_cast<int>(offset);
-    if(wad_instance->getContents(file_path, buffer, int_size, int_offset) != -1) {
-        return wad_instance->getContents(file_path, buffer, int_size, int_offset);
+static int mkdir(const char* path, mode_t mode) {
+    return 0;
+}
+
+static int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* file) {
+    Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
+    // cast to ints
+    int _size = (int)size;
+    int _offset = (int)offset;
+    if(w->getContents(path, buffer, _size, _offset) != -1) {
+        return w->getContents(path, buffer, _size, _offset);
     }
     return 0;
 }
 
-static int custom_release(const char* file_path, struct fuse_file_info* file_info) {
+static int write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* file) {
     return 0;
 }
 
-static int custom_opendir(const char* directory_path, struct fuse_file_info* file_info) {
-    return 0;
-}
-
-static int custom_readdir(const char* directory_path, void* buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* file_info) {
-    Wad* wad_instance = static_cast<Wad*>(fuse_get_context()->private_data);
-    if(!wad_instance->isDirectory(directory_path)) {
+static int readdir(const char* path, void* buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* file) {
+    Wad* w = static_cast<Wad*>(fuse_get_context()->private_data);
+    if(!w->isDirectory(path)) {
         return -1;
     }
     (void) offset;
-    (void) file_info;
-    filler(buffer, ".", nullptr, 0);
-    filler(buffer, "..", nullptr, 0);
-    vector<string> dir_contents;
-    wad_instance->getDirectory(directory_path, &dir_contents);
-    // Loop through directory contents and use filler
-    for(int i = 0; i < dir_contents.size(); i++) {
-        filler(buffer, dir_contents[i].c_str(), nullptr, 0);
+    (void) file;
+    filler(buffer, ".", NULL, 0);
+    filler(buffer, "..", NULL, 0);
+    vector<string> temp;
+    w->getDirectory(path, &temp);
+    // loop thru directory, filler
+    for(int i = 0; i < temp.size(); i++) {
+        filler(buffer, temp[i].c_str(), NULL, 0);
     }
     return 0;
 }
 
-static int custom_releasedir(const char* directory_path, struct fuse_file_info* file_info) {
+static int releasedir(const char* path, struct fuse_file_info* file) {
     return 0;
 }
 
-static struct fuse_operations custom_operations = {
-        .getattr = custom_getattr,
-        .open = custom_open,
-        .read = custom_read,
-        .release = custom_release,
-        .opendir = custom_opendir,
-        .readdir = custom_readdir,
-        .releasedir = custom_releasedir,
+static struct fuse_operations operations = {
+        .getattr = get_attr,
+        .mknod = mknod,
+        .mkdir = mkdir,
+        .read = read,
+        .write = write,
+        .readdir = readdir,
+        .releasedir = releasedir,
 };
 
 
 int main(int argc, char* argv[]) {
     if(argc < 3){
-        cout << "Insufficient arguments." << endl;
+        cout << "not enough arguments." << endl;
         exit(EXIT_SUCCESS);
     }
     string path = argv[argc - 2];
@@ -100,11 +100,11 @@ int main(int argc, char* argv[]) {
         path = string(get_current_dir_name()) + "/" + path;
     }
 
-    Wad* wad_instance = Wad::loadWad(path);
+    Wad* w = Wad::loadWad(path);
     argv[argc - 2] = argv[argc - 1];
     argc--;
 
-    int ret = fuse_main(argc, argv, &custom_operations, static_cast<void*>(wad_instance));
-    delete wad_instance;
+    int ret = fuse_main(argc, argv, &operations, static_cast<void*>(w));
+    delete w;
     return ret;
 }
